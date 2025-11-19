@@ -905,7 +905,10 @@ def register_routes(app: FastAPI, get_tado_api):
 
         if optimistic_state:
             tado_api.state_manager.set_optimistic_state(leader_device_id, optimistic_state)
-            logger.debug(f"Zone {zone_id}: Applied optimistic state prediction: {optimistic_state}")
+            logger.debug(
+                "Zone %s: Applied optimistic state prediction: %s",
+                zone_id, optimistic_state
+            )
 
         # Set the characteristics on the leader device
         try:

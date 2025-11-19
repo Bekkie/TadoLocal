@@ -199,6 +199,8 @@ class BasePlugin:
         # and when setting temperature do not implicitly enable/disable the zone (no_implicit_mode)
         self.set_point_zero_instead_of_heat_auto = (Parameters.get("Mode4", "false") == "true")
         self.setup_voicecontrol = (Parameters.get("Mode5", "false") == "true")
+        # Use radiator icon id 12 for heating selector devices by default
+        self.heater_icon_id = 12
 
         # Set debug mode
         if Parameters["Mode6"] == "Debug":
@@ -1029,6 +1031,7 @@ class BasePlugin:
                         Subtype=62,
                         Switchtype=18,
                         Options=options,
+                        Image=12,
                         Used=1 if self.auto_enable_devices else 0
                     )
                     device.Create()
