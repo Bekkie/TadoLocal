@@ -583,7 +583,7 @@ def register_routes(app: FastAPI, get_tado_api):
         }
 
     @app.get("/zones/{zone_id}", tags=["Zones"])
-    async def get_zones(zone_id: int, api_key: Optional[str] = Depends(get_api_key)):
+    async def get_zone(zone_id: int, api_key: Optional[str] = Depends(get_api_key)):
         """
         Get zone level information
 
@@ -1464,7 +1464,8 @@ def register_routes(app: FastAPI, get_tado_api):
                                 event_type = event_obj.get('type', '')
                                 if event_type not in allowed_types:
                                     continue  # Skip this event
-                            except:
+                            except Exception as e:
+                                logger.debug(f"Parsing fails, send it anyway ({e})")
                                 pass  # If parsing fails, send it anyway
 
                         yield event_data

@@ -39,6 +39,7 @@ class TadoLocalAPI:
     accessories_dict : Dict[str, Any]
     accessories_id : Dict[int, str]
     characteristic_map : Dict[tuple[int, int], str]
+    characteristic_iid_map : Dict[tuple[int, str], int]
     device_to_characteristics : Dict[int, List[tuple[int, int, str]]]  # device_id -> [(aid, iid, char_type)]
 
     def __init__(self, db_path: str):
@@ -47,6 +48,7 @@ class TadoLocalAPI:
         self.accessories_dict = {}
         self.accessories_id = {}
         self.characteristic_map = {}
+        self.characteristic_iid_map = {}
         self.device_to_characteristics = {}
         self.event_listeners: List[asyncio.Queue] = []
         self.zone_event_listeners: List[asyncio.Queue] = []  # Zone-only listeners
@@ -103,7 +105,8 @@ class TadoLocalAPI:
                 try:
                     # Signal end of stream
                     await queue.put(None)
-                except:
+                except Exception as e:
+                    logger.info(f"Event queue might already be closed: {e}")
                     pass  # Queue might already be closed
             self.event_listeners.clear()
 
@@ -114,7 +117,8 @@ class TadoLocalAPI:
                 try:
                     # Signal end of stream
                     await queue.put(None)
-                except:
+                except Exception as e:
+                    logger.info(f"Zone queue might already be closed: {e}")
                     pass  # Queue might already be closed
             self.zone_event_listeners.clear()
 
@@ -343,6 +347,7 @@ class TadoLocalAPI:
                             # Track what this characteristic is
                             all_event_characteristics.append((aid, iid))
                             self.characteristic_map[(aid, iid)] = get_characteristic_name(char_type)
+                            self.characteristic_iid_map[(aid,  get_characteristic_name(char_type))] = iid
                             self.change_tracker['event_characteristics'].add((aid, iid))
 
             if all_event_characteristics:
@@ -362,6 +367,11 @@ class TadoLocalAPI:
             logger.warning(f"Event system setup failed: {e}")
             return False
 
+    def get_iid_from_characteristics(self, aid: int, char_name: str) -> Optional[int]:
+        """Helper to find IID from characteristic type in an accessory."""
+        char_key = (aid, char_name)
+        return self.characteristic_iid_map.get(char_key)
+    
     async def handle_change(self, aid, iid, update_data, source="UNKNOWN"):
         """Unified handler for all characteristic changes (events AND polling)."""
         try:
@@ -493,7 +503,8 @@ class TadoLocalAPI:
             for listener in target_listeners:
                 try:
                     await listener.put(event_message)
-                except:
+                except Exception as e:
+                    logger.info(f"Failed to add msg to queue: Disconnect listener {e}")
                     disconnected_listeners.append(listener)
 
             # Remove disconnected listeners
@@ -756,7 +767,8 @@ class TadoLocalAPI:
                 for queue in self.event_listeners:
                     try:
                         await queue.put(event_data)
-                    except:
+                    except Exception as e:
+                        logger.info(f"Queue might be closed {e}")
                         pass  # Queue might be closed
 
                 logger.debug(f"Updated device state from event: aid={aid}, iid={iid}, value={value}")

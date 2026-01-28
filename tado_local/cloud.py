@@ -70,14 +70,13 @@ Benefits:
 import asyncio
 import logging
 import time
-from typing import Optional, Dict, Any, TYPE_CHECKING
+from typing import Optional, Dict, Any
 from datetime import datetime, timedelta
 import sqlite3
 import json
 from .database import CLOUD_SCHEMA
+from .api import TadoLocalAPI
 from .__version__ import __version__
-if TYPE_CHECKING:
-    import aiohttp
 
 try:
     import aiohttp
@@ -205,13 +204,14 @@ class TadoCloudAPI:
     # User-Agent for API identification and communication channel
     USER_AGENT = f"TadoLocal/{__version__} (+https://github.com/ampscm/TadoLocal)"
 
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: str, tado_api: TadoLocalAPI):
         """Initialize Tado Cloud API client.
 
         Args:
             db_path: Path to SQLite database for token storage
         """
         self.db_path = db_path
+        self.tado_api = tado_api
         self.access_token: Optional[str] = None
         self.refresh_token: Optional[str] = None
         self.token_expires_at: Optional[float] = None
@@ -364,7 +364,7 @@ class TadoCloudAPI:
                 logger.info("Once authenticated, you see a success result here in the log. Polling for authorization...")
                 logger.info("")
                 logger.info("You can also access this information via the web-ui or the /status endpoint:")
-                logger.info(f"    curl http://localhost:4407/status")
+                logger.info("    curl http://localhost:4407/status")
                 logger.info("=" * 70)
 
                 # Step 3: Poll for token
