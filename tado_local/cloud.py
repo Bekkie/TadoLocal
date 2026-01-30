@@ -200,7 +200,7 @@ class TadoCloudAPI:
     AUTH_BASE_URL = "https://login.tado.com/oauth2"
     API_BASE_URL = "https://my.tado.com/api/v2"
     CLIENT_ID = "1bb50063-6b0c-4d11-bd99-387f4a91cc46"
-    
+
     # User-Agent for API identification and communication channel
     USER_AGENT = f"TadoLocal/{__version__} (+https://github.com/ampscm/TadoLocal)"
 
