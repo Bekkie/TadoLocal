@@ -82,7 +82,7 @@ def app_with_state(test_db):
                 {
                     "iid": 2,
                     "type": "0000004A-0000-1000-8000-0026BB765291",
-                    "value": "tado Smart Radiator Thermostat VA0211951360"
+                    "value": "tado Smart Radiator Thermostat VA0123456789"
                  }
              ]
         },
@@ -96,7 +96,7 @@ def app_with_state(test_db):
                 {
                     "iid": 2,
                     "type": "00000023-0000-1000-8000-0026BB765291",
-                    "value": "tado Internet Bridge IB0997334784"
+                    "value": "tado Internet Bridge IB0123456789"
                  }
              ]
         },
@@ -110,8 +110,7 @@ def app_with_state(test_db):
                 {
                     "iid": 2,
                     "type": "0000004A-0000-1000-8000-0026BB765291",
-                    "value": "tado Smart Radiator Thermostat VB0211951361"
-
+                    "value": "tado Smart Radiator Thermostat VB0987654321"
                  }
              ]
         }
