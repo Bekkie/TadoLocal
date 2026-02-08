@@ -662,11 +662,11 @@ class DeviceStateManager:
             self.current_state[device_id] = {}
 
         old_status = self.current_state[device_id].get('window')
-        self.current_state[device_id]['window'] = window_open
-        self.current_state[device_id]['window_lastupdate'] = time.time()
-
         # Optionally, persist this change to history if status changed
         if old_status != window_open:
+            self.current_state[device_id]['window'] = window_open
+            self.current_state[device_id]['window_lastupdate'] = time.time()
+
             self._save_to_history(device_id, time.time())
             logger.info(f"Device {device_id} window status updated: {old_status} -> {window_open}")
 

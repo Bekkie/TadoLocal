@@ -510,11 +510,13 @@ class TadoLocalAPI:
                 zone_name = device_info.get('zone_name', 'No Zone')
                 
                 # Simple heuristic: if temperature drops significantly within time threshold, a window open is asumed
-                temp_drop_threshold = 2.0  # degrees Celsius
-                temp_drop_time_threshold = 10  # minutes
+                #temp_change_threshold = 2.0  # degrees Celsius
+                #temp_drop_time_threshold = 10  # minutes
+                temp_change_threshold = 1.0  # degrees Celsius
+                temp_change_time_threshold = 20  # minutes
 
                 # Get old values from database of the last temp_drop_time_threshold minutes to compare trends
-                history =  self.state_manager.get_device_history_info(device_id, age=temp_drop_time_threshold)
+                history =  self.state_manager.get_device_history_info(device_id, age=temp_change_time_threshold)
                 
                 # history structure: history_count, earliest_entry (temp, window, window_lastupdate), latest_entry (temp, window, window_lastupdate)
                 if not history or history['history_count'] < 1:
@@ -535,15 +537,25 @@ class TadoLocalAPI:
 
                 if history['history_count'] < 2:
                     # Temperature drop is to slow to call it an open window
-                    logger.info(f"[Window] {zone_name} | Not enough history (only {history['history_count']} entry in last {temp_drop_time_threshold} minutes)")
+                    logger.info(f"[Window] {zone_name} | Not enough readings (only {history['history_count']} entry in last {temp_change_time_threshold} minutes)")
                     return  
                 
-                temp_drop = history['earliest_entry'][0] - history['latest_entry'][0]
-                logger.info(f"[Window] {zone_name} | Window status {current_window_state} for {time_diff:.0f} mins | Temp drop {temp_drop:.1f}")
+                mode = leader_state.get('cur_heating', 0) # (0=Off, 1=Heating, 2=Cooling) 
+                if mode == 2:
+                    temp_change = history['latest_entry'][0] - history[' earliest_entry'][0]
+                    logger.info(f"[Window] {zone_name} | cooling | Window status {current_window_state} for {time_diff:.0f} mins | Temp rise {temp_change:.1f}")
+                else:
+                    temp_change = history['earliest_entry'][0] - history['latest_entry'][0]
+                    logger.info(f"[Window] {zone_name} | heating | Window status {current_window_state} for {time_diff:.0f} mins | Temp drop {temp_change:.1f}")
 
                 # check if window is currently closed (0) or in rest (2) long enough to consider it closed again
                 if current_window_state == 0  or (current_window_state == 2 and time_diff > device_info.get('window_rest_time', 15)):
-                    window_status = 1 if temp_drop >= temp_drop_threshold else 0
+                    if mode == 2:
+                        # In cooling mode, a significant temp _rise_ is likely to be caused by an open window
+                        window_status = 1 if temp_change <= temp_change_threshold else 0
+                    else:
+                        # In heating mode, a significant temp _drop_ is likely to be caused by an open window
+                        window_status = 1 if temp_change >= temp_change_threshold else 0
 
                     # Update state manager with window status
                     self.state_manager.update_device_window_status(device_id, window_status)
