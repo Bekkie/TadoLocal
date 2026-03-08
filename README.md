@@ -207,8 +207,9 @@ climate:
     name: "Living Room Heating"
     # Configure with REST commands
 ```
+The ["tado-local"](https://github.com/array81/tado-local) Home Assistant custom component is build to work with TadoLocal Server.
 
-**Want a native HACS integration?** We'd love your contribution! The REST API is ready.
+**Full documentation**: See [`home-assistant/README.md`](home-assistant/README.md) for installing TadoLocal Server as App and advanced configuration.
 
 ### Other Platforms
 
