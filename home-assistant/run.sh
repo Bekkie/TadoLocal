@@ -11,6 +11,13 @@ echo "  IP is $BRIDGE_IP"
 echo "  pin is $BRIDGE_PIN"
 ARGS="${ARGS} --bridge-ip ${BRIDGE_IP} --pin ${BRIDGE_PIN}"
 
+# Check if log_level is set to debug or trace
+LOG_LEVEL="$(bashio::config 'log_level')"
+if [ "$LOG_LEVEL" = "debug" ]; then
+    echo "INFO: Enabling verbose logging for log_level=${LOG_LEVEL}"
+    ARGS="${ARGS} --verbose"
+fi
+
 # Determine where to store the database based on the keep_db_private option
 LOCAL_DB="$(bashio::config 'keep_db_private')"
 if [ "$LOCAL_DB" = true ]; then
